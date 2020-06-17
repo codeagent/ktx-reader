@@ -40,9 +40,9 @@ export class KtxReader {
     let offset = 0;
     // Magic
     const identifier = this.toString(
-      new Uint8Array(view.buffer, offset, offset + 12)
+      new Uint8Array(view.buffer, offset, offset + 15)
     );
-    offset += 12;
+    offset += 15;
 
     // Header Properties
     const endianness = new Uint8Array(view.buffer, offset, offset + 4);
