@@ -1,4 +1,4 @@
-export type KtxInfoKeyValue = [string, Uint8Array];
+export type KtxInfoKeyValue = [string, string];
 
 export type KtxInfoTextureData = Uint8Array;
 
@@ -40,9 +40,9 @@ export class KtxReader {
     let offset = 0;
     // Magic
     const identifier = this.toString(
-      new Uint8Array(view.buffer, offset, offset + 15)
+      new Uint8Array(view.buffer, offset, offset + 12)
     );
-    offset += 15;
+    offset += 12;
 
     // Header Properties
     const endianness = new Uint8Array(view.buffer, offset, offset + 4);
@@ -98,18 +98,18 @@ export class KtxReader {
     let keyValueBytes = 0;
     while (keyValueBytes < bytesOfKeyValueData) {
       const keyAndValueByteSize = view.getUint32(offset, littleEndian);
+      keyValueBytes += 4;
       offset += 4;
 
       const bytes = new Uint8Array(view.buffer, offset, keyAndValueByteSize);
       keyValueData.push(this.toKeyAndValue(bytes));
       offset += keyAndValueByteSize;
+      keyValueBytes += keyAndValueByteSize;
 
       // Padding
-      while (view.getUint8(offset) === 0x00) {
-        offset++;
-      }
-
-      keyValueBytes += keyAndValueByteSize;
+      const padding = 3 - ((keyAndValueByteSize + 3) % 4);
+      offset += padding;
+      keyValueBytes += padding;
     }
 
     const max = Math.max;
@@ -153,7 +153,11 @@ export class KtxReader {
           element.faces.push(textureData);
 
           // cubePadding
-          while (view.getUint8(offset++) === 0x00);
+          for (
+            let i = 0;
+            i < 3 && view.getUint8(offset) === 0x00;
+            i++, offset++
+          );
         }
         mipMap.elements.push(element);
       }
@@ -164,7 +168,7 @@ export class KtxReader {
       depth = max(depth / 2, 1);
 
       // mipPadding
-      while (view.getUint8(offset++) === 0x00);
+      for (let i = 0; i < 3 && view.getUint8(offset) === 0x00; i++, offset++);
     }
 
     return {
@@ -190,16 +194,12 @@ export class KtxReader {
     return this._decoder.decode(bytes);
   }
 
-  private toKeyAndValue(bytes: Uint8Array): [string, Uint8Array] {
+  private toKeyAndValue(bytes: Uint8Array): [string, string] {
     let i = 0;
     while (bytes[i++] !== 0x0);
     const key = this.toString(bytes.subarray(0, i));
-    const value = bytes.subarray(i + 1);
+    const value = this.toString(bytes.subarray(i + 1));
     return [key, value];
-  }
-
-  private getTexelSize(format: number, typeSize: number) {
-    return FORMAT_SIZE[format] * typeSize;
   }
 }
 
