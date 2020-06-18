@@ -34,15 +34,6 @@ export interface Mesh {
   indexData: Uint16Array;
 }
 
-export type CubemapFaceData = [
-  ArrayBufferView,
-  ArrayBufferView,
-  ArrayBufferView,
-  ArrayBufferView,
-  ArrayBufferView,
-  ArrayBufferView
-];
-
 export class Renderer {
   constructor(private _gl: WebGL2RenderingContext) {
     _gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -65,6 +56,7 @@ export class Renderer {
     this._gl.bindVertexArray(vao);
     for (const attribute of mesh.vertexFormat) {
       this._gl.enableVertexAttribArray(attribute.slot);
+      this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vBuffer);
       if (attribute.type === WebGL2RenderingContext.FLOAT) {
         this._gl.vertexAttribPointer(
           attribute.slot,
@@ -183,16 +175,20 @@ export class Renderer {
     let loc;
     for (const name in material.cubemaps) {
       loc = this._gl.getUniformLocation(material.shader, name);
-      this._gl.enable(this._gl.TEXTURE0 + unit);
+      this._gl.activeTexture(this._gl.TEXTURE0 + unit);
       this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, material.cubemaps[name]);
-      this._gl.uniform1i(location, unit);
+      this._gl.uniform1i(loc, unit);
+      unit++;
     }
 
     loc = this._gl.getUniformLocation(material.shader, "viewMat");
-    this._gl.uniformMatrix4fv(location, false, camera.view);
+    this._gl.uniformMatrix4fv(loc, false, camera.view);
 
     loc = this._gl.getUniformLocation(material.shader, "projMat");
-    this._gl.uniformMatrix4fv(location, false, camera.projection);
+    this._gl.uniformMatrix4fv(loc, false, camera.projection);
+
+    loc = this._gl.getUniformLocation(material.shader, "pos");
+    this._gl.uniform3fv(loc, camera.position);
 
     this._gl.bindVertexArray(geometry.vao);
     this._gl.drawElements(
@@ -230,9 +226,17 @@ export class Camera {
     this._dirty = true;
   }
 
+  get rotation() {
+    return this._rotation;
+  }
+
   set position(position: vec3) {
     this._position = position;
     this._dirty = true;
+  }
+
+  get position() {
+    return this._position;
   }
 
   get view() {
@@ -271,6 +275,13 @@ export class Camera {
       this.near,
       this.far
     );
+  }
+
+  lookAt(eye: vec3, at: vec3) {
+    glMatrix.mat4.targetTo(this._view, eye, at, [0.0, 1.0, 0.0]);
+    glMatrix.mat4.getTranslation(this._position, this._view);
+    glMatrix.mat4.getRotation(this._rotation, this._view);
+    glMatrix.mat4.invert(this._view, this._view);
   }
 }
 
