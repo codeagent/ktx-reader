@@ -1,3 +1,7 @@
-h1, h2 {
+* {
   font-family: Lato;
+}
+
+#canvas {
+  margin: 100px auto;
 }
