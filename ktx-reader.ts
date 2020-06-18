@@ -1,14 +1,23 @@
 export type KtxInfoKeyValue = [string, string];
 
-export type KtxInfoTextureData = Uint8Array;
+export type KtxInfoCubemapData = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array
+];
 
 export interface KtxInfoTextureMipMap {
   imageSize: number;
-  elements: KtxInfoArrayElement[];
-}
-
-export interface KtxInfoArrayElement {
-  faces: KtxInfoTextureData[];
+  width: number;
+  height: number;
+  depth: number;
+  cubemap?: KtxInfoCubemapData;
+  texture?: Uint8Array;
 }
 
 export interface KtxInfo {
@@ -114,7 +123,6 @@ export class KtxReader {
 
     const max = Math.max;
 
-    const texelSize = FORMAT_SIZE[glFormat] * glTypeSize;
     // Mipmaps
     const mipmaps = [];
     let width = pixelWidth,
@@ -128,47 +136,24 @@ export class KtxReader {
       const imageSize = view.getUint32(offset, littleEndian);
       offset += 4;
 
-      const mipMap: KtxInfoTextureMipMap = { imageSize, elements: [] };
-
-      for (
-        let arrayElement = 0;
-        arrayElement < numberOfArrayElements;
-        arrayElement++
-      ) {
-        const element: KtxInfoArrayElement = { faces: [] };
-        for (let face; face < numberOfFaces; face++) {
-          const textureBegin = offset;
-          const rowLength = width * texelSize;
-          const rowPadding = 3 - ((rowLength + 3) % 4);
-          const textureEnd =
-            textureBegin + depth * height * (rowLength + rowPadding);
-
-          const textureData = new Uint8Array(
-            view.buffer,
-            textureBegin,
-            textureEnd
-          );
-          offset = textureEnd;
-
-          element.faces.push(textureData);
-
-          // cubePadding
-          for (
-            let i = 0;
-            i < 3 && view.getUint8(offset) === 0x00;
-            i++, offset++
-          );
+      const mipMap: KtxInfoTextureMipMap = { imageSize, width, height, depth };
+      if (numberOfFaces === 6 && numberOfArrayElements === 1) {
+        mipMap.cubemap = new Array<Uint8Array>(6) as KtxInfoCubemapData;
+        for (let face = 0; face < 6; face++) {
+          mipMap.cubemap[face] = new Uint8Array(view.buffer, offset, imageSize);
+          const padding = 3 - ((imageSize + 3) % 4); // cubePadding
+          offset += imageSize + padding;
         }
-        mipMap.elements.push(element);
+      } else {
+        mipMap.texture = new Uint8Array(view.buffer, offset, imageSize);
+        const padding = 3 - ((imageSize + 3) % 4); // mipPadding
+        offset += imageSize + padding;
       }
 
       mipmaps.push(mipMap);
       width = max(width / 2, 1);
       height = max(height / 2, 1);
       depth = max(depth / 2, 1);
-
-      // mipPadding
-      for (let i = 0; i < 3 && view.getUint8(offset) === 0x00; i++, offset++);
     }
 
     return {
@@ -202,14 +187,3 @@ export class KtxReader {
     return [key, value];
   }
 }
-
-const FORMAT_SIZE = {
-  [WebGL2RenderingContext.RED]: 1,
-  [WebGL2RenderingContext.RG]: 2,
-  [WebGL2RenderingContext.RGB]: 3,
-  [WebGL2RenderingContext.RGBA]: 4,
-  [WebGL2RenderingContext.RED_INTEGER]: 1,
-  [WebGL2RenderingContext.RG_INTEGER]: 2,
-  [WebGL2RenderingContext.RGB_INTEGER]: 3,
-  [WebGL2RenderingContext.RGBA_INTEGER]: 4
-};
