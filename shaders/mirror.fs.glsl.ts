@@ -13,6 +13,7 @@ void main()
 {
   vec3 v = normalize(_pos - pos);
   vec3 r = reflect(v, _normal);
-  color = vec4(1.0f, 0.0f, 0.0f, 1.0f); //vec4(texture(env, r).rgb, 1.0f);
+  color = vec4(_normal * 0.5f + 0.5f, 1.0f); 
+  color = vec4(texture(env, r, 2.0f).rgb, 1.0f);
 }
 `;

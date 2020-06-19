@@ -13,6 +13,10 @@ export interface Material {
   cubemaps: {
     [name: string]: Cubemap;
   };
+  state: {
+    cullFace: GLenum;
+    zWrite: boolean;
+  };
 }
 
 export interface VertexAttribute {
@@ -41,6 +45,7 @@ export class Renderer {
     _gl.enable(_gl.DEPTH_TEST);
     _gl.enable(_gl.CULL_FACE);
     _gl.pixelStorei(_gl.UNPACK_ALIGNMENT, 4);
+    _gl.depthFunc(_gl.LEQUAL);
     _gl.viewport(0, 0, _gl.canvas.width, _gl.canvas.height);
   }
 
@@ -129,6 +134,7 @@ export class Renderer {
 
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+
     let level = 0;
     for (let mip of ktx.mipmaps) {
       const faces = [
@@ -148,9 +154,19 @@ export class Renderer {
           mip.width,
           mip.height,
           0,
-          ktx.glFormat,
-          ktx.glType,
-          face.bytes
+          ktx.glInternalFormat === WebGL2RenderingContext.R11F_G11F_B10F
+            ? WebGL2RenderingContext.RGB
+            : ktx.glFormat,
+          ktx.glInternalFormat === WebGL2RenderingContext.R11F_G11F_B10F
+            ? WebGL2RenderingContext.UNSIGNED_INT_10F_11F_11F_REV
+            : ktx.glType,
+          ktx.glInternalFormat === WebGL2RenderingContext.R11F_G11F_B10F
+            ? new Uint32Array(
+                face.bytes.buffer,
+                face.bytes.byteOffset,
+                face.bytes.byteLength / 4
+              )
+            : face.bytes
         );
       }
 
@@ -158,11 +174,7 @@ export class Renderer {
     }
 
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(
-      gl.TEXTURE_CUBE_MAP,
-      gl.TEXTURE_MIN_FILTER,
-      gl.LINEAR_MIPMAP_LINEAR
-    );
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
@@ -189,6 +201,14 @@ export class Renderer {
 
     loc = this._gl.getUniformLocation(material.shader, "pos");
     this._gl.uniform3fv(loc, camera.position);
+
+    if (material.state) {
+      this._gl.cullFace(material.state.cullFace || WebGL2RenderingContext.BACK);
+      this._gl.depthMask(material.state.zWrite || true);
+    } else {
+      this._gl.cullFace(WebGL2RenderingContext.BACK);
+      this._gl.depthMask(true);
+    }
 
     this._gl.bindVertexArray(geometry.vao);
     this._gl.drawElements(

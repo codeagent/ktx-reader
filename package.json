@@ -1,5 +1,5 @@
 {
-  "name": "typescript",
+  "name": "@codeagent/krx-reader",
   "version": "0.0.0",
   "private": true,
   "dependencies": {

@@ -5,6 +5,8 @@ import { readKtx } from "./ktx-reader";
 import { Renderer, createCube, Camera } from "./graphics";
 import MIRROR_VS from "./shaders/mirror.vs.glsl";
 import MIRROR_FS from "./shaders/mirror.fs.glsl";
+import SKYBOX_VS from "./shaders/skybox.vs.glsl";
+import SKYBOX_FS from "./shaders/skybox.fs.glsl";
 
 const PI = Math.PI;
 const sin = Math.sin;
@@ -22,12 +24,16 @@ fetch(
     const renderer = new Renderer(gl);
     const cubeGeometry = renderer.createGeometry(createCube());
     const cubemapInfo = readKtx(b);
-    const cubemap = renderer.createCubeMap(cubemapInfo);
+    console.info(cubemapInfo);
+    const env = renderer.createCubeMap(cubemapInfo);
     const mirrorMaterial = {
       shader: renderer.createShader(MIRROR_VS, MIRROR_FS),
-      cubemaps: {
-        env: renderer.createCubeMap(cubemapInfo)
-      }
+      cubemaps: { env }
+    };
+    const skyboxMaterial = {
+      shader: renderer.createShader(SKYBOX_VS, SKYBOX_FS),
+      cubemaps: { env },
+      state: { cullFace: WebGL2RenderingContext.FRONT, zWrite: false }
     };
     const camera = new Camera(45.0, canvas.width / canvas.height, 0.01, 100.0);
     camera.position = [0.0, 0.0, 5.0];
@@ -40,11 +46,17 @@ fetch(
 
     const draw = () => {
       angle += omega * dt;
-      const pos = [radius * cos(angle), 2.0, radius * sin(angle)];
+      const pos: vec3 = [
+        radius * cos(angle),
+        radius * sin(angle * 0.5) * cos(angle * 0.5),
+        radius * sin(angle)
+      ];
       camera.lookAt(pos, origin);
 
       renderer.clear();
+      renderer.drawGeometry(camera, cubeGeometry, skyboxMaterial);
       renderer.drawGeometry(camera, cubeGeometry, mirrorMaterial);
+
       requestAnimationFrame(draw);
 
       dt = (Date.now() - t) * 1.0e-3;
