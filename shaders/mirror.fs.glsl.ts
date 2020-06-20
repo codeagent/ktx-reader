@@ -14,9 +14,7 @@ vec3 irradianceSH(vec3 n);
 
 void main()
 {
-  vec3 v = normalize(_pos - pos);
-  vec3 r = reflect(v, _normal);
-  vec3 irr = vec3(irradianceSH(_normal));
+  vec3 irr = vec3(irradianceSH(normalize(_normal)));
   color = vec4(irr, 1.0f);
 }
 
