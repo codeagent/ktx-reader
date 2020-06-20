@@ -75,7 +75,7 @@ fetch(
 
       renderer.clear();
       renderer.drawGeometry(camera, cubeGeometry, skyboxMaterial);
-      renderer.drawGeometry(camera, monkeyGeometry, pbrMaterial);
+      renderer.drawGeometry(camera, cubeGeometry, pbrMaterial);
 
       requestAnimationFrame(draw);
 
