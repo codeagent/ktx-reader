@@ -14,7 +14,7 @@ export interface Material {
     [name: string]: Cubemap;
   };
   uniforms?: {
-    [name: string]: Float32Array;
+    [name: string]: Float32Array | number[];
   };
   state?: {
     cullFace: GLenum;
@@ -85,6 +85,7 @@ export class Renderer {
       }
     }
     this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, iBuffer);
+    this._gl.bindVertexArray(null);
     return { vao, length: mesh.indexData.length };
   }
 

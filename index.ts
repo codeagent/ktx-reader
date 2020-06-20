@@ -3,10 +3,13 @@ import { vec3 } from "gl-matrix";
 
 import { readKtx } from "./ktx-reader";
 import { Renderer, createCube, Camera } from "./graphics";
+import { loadObj } from "./obj-loader";
+
 import MIRROR_VS from "./shaders/mirror.vs.glsl";
 import MIRROR_FS from "./shaders/mirror.fs.glsl";
 import SKYBOX_VS from "./shaders/skybox.vs.glsl";
 import SKYBOX_FS from "./shaders/skybox.fs.glsl";
+import SUZANNE from "./objects/suzanne.obj";
 
 const PI = Math.PI;
 const sin = Math.sin;
@@ -24,6 +27,8 @@ fetch(
     const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
     const renderer = new Renderer(gl);
     const cubeGeometry = renderer.createGeometry(createCube());
+    const monkeyGeometry = renderer.createGeometry(loadObj(SUZANNE)["Suzanne"]);
+
     const cubemapInfo = readKtx(b);
     const env = renderer.createCubeMap(cubemapInfo);
     const mirrorMaterial = {
@@ -70,7 +75,7 @@ fetch(
 
       renderer.clear();
       renderer.drawGeometry(camera, cubeGeometry, skyboxMaterial);
-      renderer.drawGeometry(camera, cubeGeometry, pbrMaterial);
+      renderer.drawGeometry(camera, monkeyGeometry, pbrMaterial);
 
       requestAnimationFrame(draw);
 
