@@ -9,6 +9,6 @@ uniform samplerCube env;
 
 void main()
 {
-  color = vec4(texture(env, normalize(_pos)).rgb, 1.0f);
+  color = vec4(textureLod(env, normalize(_pos), 0.5f).rgb, 1.0f);
 }
 `;

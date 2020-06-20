@@ -10,10 +10,13 @@ export type IndexBuffer = WebGLBuffer;
 
 export interface Material {
   shader: Shader;
-  cubemaps: {
+  cubemaps?: {
     [name: string]: Cubemap;
   };
-  state: {
+  uniforms?: {
+    [name: string]: Float32Array;
+  };
+  state?: {
     cullFace: GLenum;
     zWrite: boolean;
   };
@@ -174,7 +177,17 @@ export class Renderer {
     }
 
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(
+      gl.TEXTURE_CUBE_MAP,
+      gl.TEXTURE_MIN_FILTER,
+      gl.LINEAR_MIPMAP_LINEAR
+    );
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_BASE_LEVEL, 0);
+    gl.texParameteri(
+      gl.TEXTURE_CUBE_MAP,
+      gl.TEXTURE_MAX_LEVEL,
+      ktx.numberOfMipmapLevels - 1
+    );
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
@@ -185,12 +198,20 @@ export class Renderer {
     this._gl.useProgram(material.shader);
     let unit = 0;
     let loc;
+
+    // Material cubemaps
     for (const name in material.cubemaps) {
       loc = this._gl.getUniformLocation(material.shader, name);
       this._gl.activeTexture(this._gl.TEXTURE0 + unit);
       this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, material.cubemaps[name]);
       this._gl.uniform1i(loc, unit);
       unit++;
+    }
+
+    // Material uniforms
+    for (const name in material.uniforms) {
+      loc = this._gl.getUniformLocation(material.shader, name);
+      this._gl.uniform3fv(loc, material.uniforms[name]);
     }
 
     loc = this._gl.getUniformLocation(material.shader, "viewMat");

@@ -11,6 +11,7 @@ import SKYBOX_FS from "./shaders/skybox.fs.glsl";
 const PI = Math.PI;
 const sin = Math.sin;
 const cos = Math.cos;
+const floor = Math.floor;
 const origin: vec3 = [0.0, 0.0, 0.0];
 
 fetch(
@@ -24,12 +25,26 @@ fetch(
     const renderer = new Renderer(gl);
     const cubeGeometry = renderer.createGeometry(createCube());
     const cubemapInfo = readKtx(b);
-    console.info(cubemapInfo);
     const env = renderer.createCubeMap(cubemapInfo);
     const mirrorMaterial = {
       shader: renderer.createShader(MIRROR_VS, MIRROR_FS),
       cubemaps: { env }
     };
+
+    const meta = cubemapInfo.keyValueData.find(([key, value]) =>
+      /sh/.test(key)
+    );
+    const sphericalHarmonics = meta[1]
+      .split(/[\s]+/g)
+      .map(parseFloat)
+      .filter(v => !isNaN(v));
+
+    const pbrMaterial = {
+      shader: renderer.createShader(MIRROR_VS, MIRROR_FS),
+      cubemaps: { env },
+      uniforms: { sphericalHarmonics }
+    };
+
     const skyboxMaterial = {
       shader: renderer.createShader(SKYBOX_VS, SKYBOX_FS),
       cubemaps: { env },
@@ -55,7 +70,7 @@ fetch(
 
       renderer.clear();
       renderer.drawGeometry(camera, cubeGeometry, skyboxMaterial);
-      renderer.drawGeometry(camera, cubeGeometry, mirrorMaterial);
+      renderer.drawGeometry(camera, cubeGeometry, pbrMaterial);
 
       requestAnimationFrame(draw);
 
