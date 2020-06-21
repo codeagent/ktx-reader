@@ -59,8 +59,8 @@ void main()
 {
   float metallic = 1.0f;
   vec3 baseColor = vec3(1.0f, 0.0f, 0.0f);
-  float reflectance = 0.9f;
-  float perceptualRoughness = 0.9f;
+  float reflectance = 0.5f;
+  float perceptualRoughness = 0.3f;
 
   vec3 f0 = 0.16 * reflectance * reflectance * (1.0 - metallic) + baseColor * metallic;
   vec3 f90 = vec3(1.0f);
@@ -68,7 +68,7 @@ void main()
   vec3 n = normalize(_normal);
   vec3 v = normalize(pos - _pos);
 
-  vec3 lighting = ibl(n, v, vec3(0.0f), f0, f90, perceptualRoughness);
+  vec3 lighting = ibl(n, v,  (1.0 - metallic) * baseColor , f0, f90, perceptualRoughness);
   color = vec4(gamma(tone(lighting)), 1.0f);
 }
 

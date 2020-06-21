@@ -63,14 +63,14 @@ fetch(
     let t = Date.now(),
       dt = 0.0,
       angle = 0.0;
-    const omega = Math.PI * 0.25,
+    const omega = Math.PI * 0.025,
       radius = 5.0;
 
     const draw = () => {
       angle += omega * dt;
       const pos: vec3 = [
         radius * cos(angle),
-        radius * sin(angle * 0.5) * cos(angle * 0.5),
+        radius * sin(angle * 0.05) * cos(angle * 0.05),
         radius * sin(angle)
       ];
       camera.lookAt(pos, origin);
