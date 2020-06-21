@@ -3,6 +3,9 @@ import { quat, mat4, vec3 } from "gl-matrix";
 
 import { KtxInfo } from "./ktx-reader";
 
+import DFG from "./dfg";
+console.log(DFG);
+
 export type Shader = WebGLProgram;
 export type Cubemap = WebGLTexture;
 export type VertexBuffer = WebGLBuffer;
@@ -193,6 +196,39 @@ export class Renderer {
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
     return texture;
+  }
+
+  createDfgTexture() {
+    const gl = this._gl;
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      format,
+      width,
+      height,
+      0,
+      TEXTURE_IMAGE_FORMAT_TABLE[format],
+      TEXTURE_TYPE_TABLE[format],
+      image as any
+    );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    if (
+      format === TextureFormat.Depth16 ||
+      format === TextureFormat.Depth24 ||
+      format === TextureFormat.Depth32
+    ) {
+      gl.texParameteri(
+        gl.TEXTURE_2D,
+        gl.TEXTURE_COMPARE_MODE,
+        gl.COMPARE_REF_TO_TEXTURE
+      );
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.GREATER);
+    }
   }
 
   drawGeometry(camera: Camera, geometry: Geometry, material: Material) {
