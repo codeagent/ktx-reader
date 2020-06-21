@@ -8,6 +8,7 @@ console.log(DFG);
 
 export type Shader = WebGLProgram;
 export type Cubemap = WebGLTexture;
+export type Texture2d = WebGLTexture;
 export type VertexBuffer = WebGLBuffer;
 export type IndexBuffer = WebGLBuffer;
 
@@ -15,6 +16,9 @@ export interface Material {
   shader: Shader;
   cubemaps?: {
     [name: string]: Cubemap;
+  };
+  textures?: {
+    [name: string]: Texture2d;
   };
   uniforms?: {
     [name: string]: Float32Array | number[];
@@ -205,30 +209,19 @@ export class Renderer {
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
-      format,
-      width,
-      height,
+      WebGL2RenderingContext.RG16F,
+      128,
+      128,
       0,
-      TEXTURE_IMAGE_FORMAT_TABLE[format],
-      TEXTURE_TYPE_TABLE[format],
-      image as any
+      WebGL2RenderingContext.RG,
+      WebGL2RenderingContext.HALF_FLOAT,
+      Uint16Array.from(DFG)
     );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    if (
-      format === TextureFormat.Depth16 ||
-      format === TextureFormat.Depth24 ||
-      format === TextureFormat.Depth32
-    ) {
-      gl.texParameteri(
-        gl.TEXTURE_2D,
-        gl.TEXTURE_COMPARE_MODE,
-        gl.COMPARE_REF_TO_TEXTURE
-      );
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.GREATER);
-    }
+    return texture;
   }
 
   drawGeometry(camera: Camera, geometry: Geometry, material: Material) {
@@ -236,13 +229,29 @@ export class Renderer {
     let unit = 0;
     let loc;
 
+    // Material textures
+    for (const name in material.textures) {
+      loc = this._gl.getUniformLocation(material.shader, name);
+      if (loc) {
+        this._gl.activeTexture(this._gl.TEXTURE0 + unit);
+        this._gl.bindTexture(this._gl.TEXTURE_2D, material.textures[name]);
+        this._gl.uniform1i(loc, unit);
+        unit++;
+      }
+    }
+
     // Material cubemaps
     for (const name in material.cubemaps) {
       loc = this._gl.getUniformLocation(material.shader, name);
-      this._gl.activeTexture(this._gl.TEXTURE0 + unit);
-      this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, material.cubemaps[name]);
-      this._gl.uniform1i(loc, unit);
-      unit++;
+      if (loc) {
+        this._gl.activeTexture(this._gl.TEXTURE0 + unit);
+        this._gl.bindTexture(
+          this._gl.TEXTURE_CUBE_MAP,
+          material.cubemaps[name]
+        );
+        this._gl.uniform1i(loc, unit);
+        unit++;
+      }
     }
 
     // Material uniforms

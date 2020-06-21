@@ -28,6 +28,7 @@ fetch(
     const renderer = new Renderer(gl);
     const cubeGeometry = renderer.createGeometry(createCube());
     const monkeyGeometry = renderer.createGeometry(loadObj(SUZANNE)["Suzanne"]);
+    const dfgLut = renderer.createDfgTexture();
 
     const cubemapInfo = readKtx(b);
     const env = renderer.createCubeMap(cubemapInfo);
@@ -46,7 +47,8 @@ fetch(
 
     const pbrMaterial = {
       shader: renderer.createShader(MIRROR_VS, MIRROR_FS),
-      cubemaps: { env },
+      cubemaps: { prefilteredEnvMap: env },
+      textures: { dfgLut },
       uniforms: { sphericalHarmonics }
     };
 
@@ -75,7 +77,7 @@ fetch(
 
       renderer.clear();
       renderer.drawGeometry(camera, cubeGeometry, skyboxMaterial);
-      renderer.drawGeometry(camera, cubeGeometry, pbrMaterial);
+      renderer.drawGeometry(camera, monkeyGeometry, pbrMaterial);
 
       requestAnimationFrame(draw);
 
