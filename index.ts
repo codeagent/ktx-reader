@@ -17,7 +17,7 @@ const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
 const renderer = new Renderer(gl);
 
 init(renderer).then(scenes => {
-  const scene = scenes[0];
+  let scene = scenes[1];
 
   const sceneOptionsForm = new SceneOptionsForm(
     {
@@ -34,6 +34,10 @@ init(renderer).then(scenes => {
       gamma: options.gamma,
       exposure: options.exposure
     });
+
+    if (scene.name !== options.scene) {
+      scene = scenes.find(scene => scene.name === options.scene);
+    }
   });
 
   let t = Date.now(),
