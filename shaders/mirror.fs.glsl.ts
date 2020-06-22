@@ -1,10 +1,6 @@
 export default `#version 300 es
 precision highp float;
 
-#define PI 3.14159265f
-#define NUM_SAMPLES 512u
-#define EPS 1.0e-4
-
 layout( location = 0 ) out vec4 color;	
 
 in vec3 _normal;
@@ -14,7 +10,6 @@ uniform sampler2D dfgLut;
 uniform samplerCube prefilteredEnvMap;
 uniform vec3 pos;
 uniform vec3 sphericalHarmonics[9];
-
 
 vec3 irradianceSH(vec3 n) {
     // uniform vec3 sphericalHarmonics[9]

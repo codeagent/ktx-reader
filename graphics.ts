@@ -4,7 +4,6 @@ import { quat, mat4, vec3 } from "gl-matrix";
 import { KtxInfo } from "./ktx-reader";
 
 import DFG from "./dfg";
-console.log(DFG);
 
 export type Shader = WebGLProgram;
 export type Cubemap = WebGLTexture;
@@ -49,7 +48,10 @@ export interface Mesh {
 }
 
 export class Renderer {
+  readonly context: WebGL2RenderingContext;
+
   constructor(private _gl: WebGL2RenderingContext) {
+    this.context = _gl;
     _gl.clearColor(0.0, 0.0, 0.0, 1.0);
     _gl.clearDepth(1.0);
     _gl.enable(_gl.DEPTH_TEST);
