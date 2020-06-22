@@ -154,7 +154,7 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
   const dfgLut = renderer.createDfgTexture();
   const sphericalHarmonics = parseSH(iblKtx);
 
-  const scale = 0.07;
+  const scale = 0.075;
 
   const material = {
     shader: pbrShader,
