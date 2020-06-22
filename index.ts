@@ -10,6 +10,7 @@ import MIRROR_FS from "./shaders/mirror.fs.glsl";
 import SKYBOX_VS from "./shaders/skybox.vs.glsl";
 import SKYBOX_FS from "./shaders/skybox.fs.glsl";
 import SUZANNE from "./objects/suzanne.obj";
+import ICOSPHERE from "./objects/icosphere.obj";
 
 const PI = Math.PI;
 const sin = Math.sin;
@@ -28,6 +29,7 @@ fetch(
     const renderer = new Renderer(gl);
     const cubeGeometry = renderer.createGeometry(createCube());
     const monkeyGeometry = renderer.createGeometry(loadObj(SUZANNE)["Suzanne"]);
+    const sphereGeometry = renderer.createGeometry(loadObj(ICOSPHERE)["Icosphere"]);
     const dfgLut = renderer.createDfgTexture();
 
     const cubemapInfo = readKtx(b);
@@ -77,7 +79,7 @@ fetch(
 
       renderer.clear();
       renderer.drawGeometry(camera, cubeGeometry, skyboxMaterial);
-      renderer.drawGeometry(camera, monkeyGeometry, pbrMaterial);
+      renderer.drawGeometry(camera, sphereGeometry, pbrMaterial);
 
       requestAnimationFrame(draw);
 
