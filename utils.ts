@@ -43,10 +43,10 @@ export class VertexAttributeStream
       let value;
       if (this.attribute.size > 1) {
         value = Array.from(new Array(this.attribute.size)).map((_, i) =>
-          this._dataView.getFloat32(byteOffset + i * this._componentSize)
+          this._dataView.getFloat32(byteOffset + i * this._componentSize, true)
         );
       } else {
-        value = this._dataView.getFloat32(byteOffset);
+        value = this._dataView.getFloat32(byteOffset, true);
       }
 
       return { done: false, value: { value, index } };
@@ -158,8 +158,8 @@ export const calculateTangents = (mesh: Mesh, slot = 3): Mesh => {
 
   const aux = glMatrix.vec3.create();
   const triangleStream = new TriangleStream(mesh);
-  for (const tri of triangleStream) {
-    console.log(tri);
+  const triangles = Array.from(triangleStream);
+  for (const tri of triangles) {
     for (let j = 0; j < 3; j++) {
       if (processed.has(tri[j].index)) {
         continue;
@@ -215,12 +215,12 @@ export const calculateTangents = (mesh: Mesh, slot = 3): Mesh => {
     type: WebGL2RenderingContext.FLOAT,
     slot: slot,
     offset: mesh.vertexData.byteLength,
-    stride: 32
+    stride: 16
   });
 
   mesh.vertexData = concatBuffers(mesh.vertexData, Float32Array.from(tb));
 
-  console.log(tb);
+
 
   return mesh;
 };
