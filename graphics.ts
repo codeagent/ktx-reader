@@ -20,7 +20,7 @@ export interface Material {
     [name: string]: Texture2d;
   };
   uniforms?: {
-    [name: string]: Float32Array | number[];
+    [name: string]: Float32Array | number[] | number;
   };
   state?: {
     cullFace: GLenum;
@@ -47,8 +47,14 @@ export interface Mesh {
   indexData: Uint16Array;
 }
 
+export interface RenderSettings {
+  exposure: number;
+  gamma: number;
+}
+
 export class Renderer {
   readonly context: WebGL2RenderingContext;
+  private _renderSettings: RenderSettings;
 
   constructor(private _gl: WebGL2RenderingContext) {
     this.context = _gl;
@@ -59,6 +65,11 @@ export class Renderer {
     _gl.pixelStorei(_gl.UNPACK_ALIGNMENT, 4);
     _gl.depthFunc(_gl.LEQUAL);
     _gl.viewport(0, 0, _gl.canvas.width, _gl.canvas.height);
+
+    this._renderSettings = {
+      exposure: 1.0,
+      gamma: 2.2
+    };
   }
 
   clear() {
@@ -257,9 +268,14 @@ export class Renderer {
     }
 
     // Material uniforms
-    for (const name in material.uniforms) {
+    const uniforms = { ...this._renderSettings, ...material.uniforms };
+    for (const name in uniforms) {
       loc = this._gl.getUniformLocation(material.shader, name);
-      this._gl.uniform3fv(loc, material.uniforms[name]);
+      if (typeof uniforms[name] === "number") {
+        this._gl.uniform1f(loc, uniforms[name] as number);
+      } else {
+        this._gl.uniform3fv(loc, uniforms[name] as number[]);
+      }
     }
 
     loc = this._gl.getUniformLocation(material.shader, "viewMat");
@@ -286,6 +302,10 @@ export class Renderer {
       WebGL2RenderingContext.UNSIGNED_SHORT,
       0
     );
+  }
+
+  setRenderSettings(settigs: RenderSettings) {
+    this._renderSettings = settigs;
   }
 
   private createVertexBuffer(data: ArrayBufferView): VertexBuffer {
@@ -373,208 +393,3 @@ export class Camera {
     glMatrix.mat4.invert(this._view, this._view);
   }
 }
-
-export const createCube = (): Mesh => {
-  return {
-    vertexFormat: [
-      {
-        size: 3,
-        type: WebGL2RenderingContext.FLOAT,
-        slot: 0,
-        offset: 0,
-        stride: 24
-      },
-      {
-        size: 3,
-        type: WebGL2RenderingContext.FLOAT,
-        slot: 1,
-        offset: 12,
-        stride: 24
-      }
-    ],
-    vertexData: Float32Array.from([
-      1,
-      -1,
-      -1,
-      0,
-      0,
-      -1,
-      -1,
-      1,
-      -1,
-      0,
-      0,
-      -1,
-      1,
-      1,
-      -1,
-      0,
-      0,
-      -1,
-      -1,
-      1,
-      1,
-      0,
-      0,
-      1,
-      1,
-      -1,
-      1,
-      0,
-      0,
-      1,
-      1,
-      1,
-      1,
-      0,
-      0,
-      1,
-      1,
-      1,
-      1,
-      1,
-      0,
-      0,
-      1,
-      -1,
-      -1,
-      1,
-      0,
-      0,
-      1,
-      1,
-      -1,
-      1,
-      0,
-      0,
-      1,
-      -1,
-      1,
-      0,
-      -1,
-      0,
-      -1,
-      -1,
-      -1,
-      0,
-      -1,
-      0,
-      1,
-      -1,
-      -1,
-      0,
-      -1,
-      0,
-      -1,
-      -1,
-      -1,
-      -1,
-      0,
-      0,
-      -1,
-      1,
-      1,
-      -1,
-      0,
-      0,
-      -1,
-      1,
-      -1,
-      -1,
-      0,
-      0,
-      1,
-      1,
-      -1,
-      0,
-      1,
-      0,
-      -1,
-      1,
-      1,
-      0,
-      1,
-      0,
-      1,
-      1,
-      1,
-      0,
-      1,
-      0,
-      -1,
-      -1,
-      -1,
-      0,
-      0,
-      -1,
-      -1,
-      -1,
-      1,
-      0,
-      0,
-      1,
-      1,
-      -1,
-      1,
-      1,
-      0,
-      0,
-      -1,
-      -1,
-      1,
-      0,
-      -1,
-      0,
-      -1,
-      -1,
-      1,
-      -1,
-      0,
-      0,
-      -1,
-      1,
-      -1,
-      0,
-      1,
-      0
-    ]),
-    indexData: Uint16Array.from([
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      0,
-      18,
-      1,
-      3,
-      19,
-      4,
-      6,
-      20,
-      7,
-      9,
-      21,
-      10,
-      12,
-      22,
-      13,
-      15,
-      23,
-      16
-    ])
-  };
-};

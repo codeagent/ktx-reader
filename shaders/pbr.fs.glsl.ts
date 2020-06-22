@@ -6,6 +6,14 @@ layout( location = 0 ) out vec4 color;
 in vec3 _normal;
 in vec3 _pos;
 
+uniform float exposure;
+uniform float gamma;
+
+uniform vec3 matAlbedo;
+uniform float matMetallic;
+uniform float matReflectance;
+uniform float matRoughness;
+
 uniform sampler2D dfgLut;
 uniform samplerCube prefilteredEnvMap;
 uniform vec3 pos;
@@ -40,31 +48,24 @@ vec3 ibl(vec3 n, vec3 v, vec3 diffuseColor, vec3 f0, vec3 f90, float perceptualR
     return Ld + Lr;
 }
 
-#define EXPOSURE  0.9f
-
-vec3 gamma(const vec3 color) {
-  return pow(color, vec3(1.0f/2.2f));
+vec3 gammaCorrection(const vec3 color) {
+  return pow(color, vec3(1.0f / gamma));
 }
 
-vec3 tone(const vec3 color) {
-  return vec3(1.0f) - exp(-color * EXPOSURE);
+vec3 toneMapping(const vec3 color) {
+  return vec3(1.0f) - exp(-color * exposure);
 }
 
 void main()
 {
-  float metallic = 1.0f;
-  vec3 baseColor = vec3(1.0f, 0.0f, 0.0f);
-  float reflectance = 0.5f;
-  float perceptualRoughness = 0.3f;
-
-  vec3 f0 = 0.16 * reflectance * reflectance * (1.0 - metallic) + baseColor * metallic;
+  vec3 f0 = 0.16 * matReflectance * matReflectance * (1.0 - matMetallic) + matAlbedo * matMetallic;
   vec3 f90 = vec3(1.0f);
 
   vec3 n = normalize(_normal);
   vec3 v = normalize(pos - _pos);
 
-  vec3 lighting = ibl(n, v,  (1.0 - metallic) * baseColor , f0, f90, perceptualRoughness);
-  color = vec4(gamma(tone(lighting)), 1.0f);
+  vec3 lighting = ibl(n, v,  (1.0 - matMetallic) * matAlbedo , f0, f90, matRoughness);
+  color = vec4(gammaCorrection(toneMapping(lighting)), 1.0f);
 }
 
 

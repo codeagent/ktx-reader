@@ -1,16 +1,7 @@
 import "./style.css";
 import { vec3 } from "gl-matrix";
 
-import { readKtx } from "./ktx-reader";
-import { Renderer, createCube, Camera } from "./graphics";
-import { loadObj } from "./obj-loader";
-
-import MIRROR_VS from "./shaders/mirror.vs.glsl";
-import MIRROR_FS from "./shaders/mirror.fs.glsl";
-import SKYBOX_VS from "./shaders/skybox.vs.glsl";
-import SKYBOX_FS from "./shaders/skybox.fs.glsl";
-import SUZANNE from "./objects/suzanne.obj";
-import ICOSPHERE from "./objects/icosphere.obj";
+import { Renderer } from "./graphics";
 
 import init from "./scenes";
 

@@ -10,8 +10,8 @@ import {
 import { KtxInfo, readKtx } from "./ktx-reader";
 import { loadObj } from "./obj-loader";
 
-import PBR_VS from "./shaders/mirror.vs.glsl";
-import PBR_FS from "./shaders/mirror.fs.glsl";
+import PBR_VS from "./shaders/pbr.vs.glsl";
+import PBR_FS from "./shaders/pbr.fs.glsl";
 import SKYBOX_VS from "./shaders/skybox.vs.glsl";
 import SKYBOX_FS from "./shaders/skybox.fs.glsl";
 import SUZANNE from "./objects/suzanne.obj";
@@ -47,7 +47,7 @@ const parseSH = (ktx: KtxInfo): number[] => {
   if (!meta) {
     return [];
   }
-  const [sh] = meta;
+  const [, sh] = meta;
   return sh
     .split(/[\s]+/g)
     .map(parseFloat)
@@ -70,7 +70,13 @@ const createBallScene = async (renderer: Renderer): Promise<Scene> => {
     shader: renderer.createShader(PBR_VS, PBR_FS),
     cubemaps: { prefilteredEnvMap: iblCubemap },
     textures: { dfgLut: renderer.createDfgTexture() },
-    uniforms: { sphericalHarmonics: parseSH(iblKtx) }
+    uniforms: {
+      sphericalHarmonics: parseSH(iblKtx),
+      matAlbedo: [1.0, 0.0, 0.0],
+      matMetallic: 0.4,
+      matReflectance: 0.7,
+      matRoughness: 0.4
+    }
   };
 
   const skyboxMaterial = {
