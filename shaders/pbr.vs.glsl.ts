@@ -13,6 +13,6 @@ void main()
 {
   _pos = position;
   _normal =  normal;
-  gl_Position = projMat * viewMat *  vec4(position, 1.0f);
+  gl_Position = projMat * viewMat * worldMat * vec4(position, 1.0f);
 }
 `;

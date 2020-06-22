@@ -22,18 +22,19 @@ init(renderer).then(scenes => {
     dt = 0.0,
     angle = 0.0;
   const omega = Math.PI * 0.025,
-    radius = 5.0;
+    radius = 10.0;
 
   const draw = () => {
     angle += omega * dt;
     const pos: vec3 = [
-      radius * cos(angle),
-      radius * sin(angle * 0.05) * cos(angle * 0.05),
-      radius * sin(angle)
+      radius * sin(angle),
+      radius * sin(angle * 0.5) * cos(angle * 0.5),
+      radius * cos(angle)
     ];
     scene.camera.lookAt(pos, origin);
 
     renderer.clear();
+
     for (const drawable of scene.drawables) {
       renderer.drawGeometry(scene.camera, drawable, drawable.material);
     }
