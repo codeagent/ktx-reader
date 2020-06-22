@@ -52,6 +52,12 @@ export interface RenderSettings {
   gamma: number;
 }
 
+export interface Drawable {
+  material: Material;
+  geometry: Geometry;
+  transform: Transform;
+}
+
 export class Renderer {
   readonly context: WebGL2RenderingContext;
   private _renderSettings: RenderSettings;
@@ -237,7 +243,7 @@ export class Renderer {
     return texture;
   }
 
-  drawGeometry(camera: Camera, geometry: Geometry, material: Material) {
+  drawGeometry(camera: Camera, drawable: Drawable, material: Material) {
     this._gl.useProgram(material.shader);
     let unit = 0;
     let loc;
@@ -278,14 +284,25 @@ export class Renderer {
       }
     }
 
+    loc = this._gl.getUniformLocation(material.shader, "worldMat");
+    if (loc) {
+      this._gl.uniformMatrix4fv(loc, false, drawable.transform.transform);
+    }
+
     loc = this._gl.getUniformLocation(material.shader, "viewMat");
-    this._gl.uniformMatrix4fv(loc, false, camera.view);
+    if (loc) {
+      this._gl.uniformMatrix4fv(loc, false, camera.view);
+    }
 
     loc = this._gl.getUniformLocation(material.shader, "projMat");
-    this._gl.uniformMatrix4fv(loc, false, camera.projection);
+    if (loc) {
+      this._gl.uniformMatrix4fv(loc, false, camera.projection);
+    }
 
     loc = this._gl.getUniformLocation(material.shader, "pos");
-    this._gl.uniform3fv(loc, camera.position);
+    if (loc) {
+      this._gl.uniform3fv(loc, camera.position);
+    }
 
     if (material.state) {
       this._gl.cullFace(material.state.cullFace || WebGL2RenderingContext.BACK);
@@ -295,10 +312,10 @@ export class Renderer {
       this._gl.depthMask(true);
     }
 
-    this._gl.bindVertexArray(geometry.vao);
+    this._gl.bindVertexArray(drawable.geometry.vao);
     this._gl.drawElements(
       WebGL2RenderingContext.TRIANGLES,
-      geometry.length,
+      drawable.geometry.length,
       WebGL2RenderingContext.UNSIGNED_SHORT,
       0
     );
@@ -329,7 +346,7 @@ export class Renderer {
   }
 }
 
-export class Camera {
+export class Transform {
   set rotation(rotation: quat) {
     this._rotation = rotation;
     this._dirty = true;
@@ -348,16 +365,41 @@ export class Camera {
     return this._position;
   }
 
-  get view() {
+  set scale(scale: vec3) {
+    this._scale = scale;
+    this._dirty = true;
+  }
+
+  get scale() {
+    return this._scale;
+  }
+
+  get transform() {
     if (this._dirty) {
-      glMatrix.mat4.fromRotationTranslation(
-        this._view,
+      glMatrix.mat4.fromRotationTranslationScale(
+        this._transform,
         this._rotation,
-        this._position
+        this._position,
+        this._scale
       );
-      glMatrix.mat4.invert(this._view, this._view);
       this._dirty = true;
     }
+    return this._transform;
+  }
+
+  protected _transform: mat4 = glMatrix.mat4.create();
+  protected _dirty = true;
+
+  constructor(
+    protected _position: vec3 = glMatrix.vec3.create(),
+    protected _scale: vec3 = glMatrix.vec3.fromValues(1.0, 1.0, 1.0),
+    protected _rotation: quat = glMatrix.quat.create()
+  ) {}
+}
+
+export class Camera extends Transform {
+  get view() {
+    glMatrix.mat4.invert(this._view, this.transform);
     return this._view;
   }
 
@@ -367,9 +409,6 @@ export class Camera {
 
   protected _view: mat4 = glMatrix.mat4.create();
   protected _projection: mat4 = glMatrix.mat4.create();
-  protected _position: vec3 = glMatrix.vec3.create();
-  protected _rotation: quat = glMatrix.quat.create();
-  private _dirty = true;
 
   constructor(
     public readonly fov,
@@ -377,6 +416,7 @@ export class Camera {
     public readonly near,
     public readonly far
   ) {
+    super();
     glMatrix.mat4.perspective(
       this._projection,
       glMatrix.glMatrix.toRadian(this.fov),
@@ -388,8 +428,7 @@ export class Camera {
 
   lookAt(eye: vec3, at: vec3) {
     glMatrix.mat4.targetTo(this._view, eye, at, [0.0, 1.0, 0.0]);
-    glMatrix.mat4.getTranslation(this._position, this._view);
-    glMatrix.mat4.getRotation(this._rotation, this._view);
-    glMatrix.mat4.invert(this._view, this._view);
+    glMatrix.mat4.getTranslation(this.position, this._view);
+    glMatrix.mat4.getRotation(this.rotation, this._view);
   }
 }

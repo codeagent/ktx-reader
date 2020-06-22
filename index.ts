@@ -35,7 +35,7 @@ init(renderer).then(scenes => {
 
     renderer.clear();
     for (const drawable of scene.drawables) {
-      renderer.drawGeometry(scene.camera, drawable.geometry, drawable.material);
+      renderer.drawGeometry(scene.camera, drawable, drawable.material);
     }
 
     requestAnimationFrame(draw);

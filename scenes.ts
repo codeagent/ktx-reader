@@ -4,7 +4,9 @@ import {
   Material,
   Geometry,
   Renderer,
-  Texture2d
+  Texture2d,
+  Drawable,
+  Transform
 } from "./graphics";
 
 import { KtxInfo, readKtx } from "./ktx-reader";
@@ -17,11 +19,6 @@ import SKYBOX_FS from "./shaders/skybox.fs.glsl";
 import SUZANNE from "./objects/suzanne.obj";
 import ICOSPHERE from "./objects/icosphere.obj";
 import CUBE from "./objects/cube.obj";
-
-export interface Drawable {
-  material: Material;
-  geometry: Geometry;
-}
 
 export interface Scene {
   name: string;
@@ -57,8 +54,8 @@ const parseSH = (ktx: KtxInfo): number[] => {
 // Simple sphere scene
 const createBallScene = async (renderer: Renderer): Promise<Scene> => {
   const [ibl, skybox] = await Promise.all([
-    fetch(ENV1_IBL).then(r => r.arrayBuffer()),
-    fetch(ENV1_SKYBOX).then(r => r.arrayBuffer())
+    fetch(ENV2_IBL).then(r => r.arrayBuffer()),
+    fetch(ENV2_SKYBOX).then(r => r.arrayBuffer())
   ]);
 
   const iblKtx = readKtx(ibl);
@@ -66,18 +63,24 @@ const createBallScene = async (renderer: Renderer): Promise<Scene> => {
   const iblCubemap = renderer.createCubeMap(iblKtx);
   const skyboxCubemap = renderer.createCubeMap(skyboxKtx);
 
-  const pbrMaterial = {
-    shader: renderer.createShader(PBR_VS, PBR_FS),
-    cubemaps: { prefilteredEnvMap: iblCubemap },
-    textures: { dfgLut: renderer.createDfgTexture() },
-    uniforms: {
-      sphericalHarmonics: parseSH(iblKtx),
-      matAlbedo: [1.0, 0.0, 0.0],
-      matMetallic: 0.4,
-      matReflectance: 0.7,
-      matRoughness: 0.4
-    }
-  };
+  {
+    const pbrShader = renderer.createShader(PBR_VS, PBR_FS);
+    const dfgLut = renderer.createDfgTexture();
+    const sphericalHarmonics = parseSH(iblKtx);
+
+    const pbrMaterial = {
+      shader: renderer.createShader(PBR_VS, PBR_FS),
+      cubemaps: { prefilteredEnvMap: iblCubemap },
+      textures: { dfgLut: renderer.createDfgTexture() },
+      uniforms: {
+        sphericalHarmonics: parseSH(iblKtx),
+        matAlbedo: [0.75, 0.0, 0.0],
+        matMetallic: 0.99,
+        matReflectance: 0.9,
+        matRoughness: 0.1
+      }
+    };
+  }
 
   const skyboxMaterial = {
     shader: renderer.createShader(SKYBOX_VS, SKYBOX_FS),
@@ -103,8 +106,16 @@ const createBallScene = async (renderer: Renderer): Promise<Scene> => {
     name: "Ball",
     camera,
     drawables: [
-      { material: pbrMaterial, geometry: sphereGeometry },
-      { material: skyboxMaterial, geometry: cubeGeometry }
+      {
+        material: pbrMaterial,
+        geometry: sphereGeometry,
+        transform: new Transform()
+      },
+      {
+        material: skyboxMaterial,
+        geometry: cubeGeometry,
+        transform: new Transform()
+      }
     ]
   };
 };

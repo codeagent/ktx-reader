@@ -7,21 +7,21 @@ in vec3 _pos;
 
 uniform samplerCube env;
 
-#define EXPOSURE  0.5f
+uniform float exposure;
+uniform float gamma;
 
-vec3 gamma(const vec3 color) {
-  return pow(color, vec3(1.0f/2.2f));
+vec3 gammaCorrection(const vec3 color) {
+  return pow(color, vec3(1.0f / gamma));
 }
 
-vec3 tone(const vec3 color) {
-  return vec3(1.0f) - exp(-color * EXPOSURE);
+vec3 toneMapping(const vec3 color) {
+  return vec3(1.0f) - exp(-color * exposure);
 }
-
 
 void main()
 {
   vec3 background = textureLod(env, normalize(_pos), 0.0f).rgb;
 
-  color = vec4(gamma(tone(background)), 1.0f);
+  color = vec4(gammaCorrection(toneMapping(background)), 1.0f);
 }
 `;

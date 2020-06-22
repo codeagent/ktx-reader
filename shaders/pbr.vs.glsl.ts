@@ -4,6 +4,7 @@ layout(location = 1) in vec3 normal;
 
 uniform mat4 viewMat;
 uniform mat4 projMat;
+uniform mat4 worldMat;
 
 out vec3 _normal;
 out vec3 _pos;
@@ -12,6 +13,6 @@ void main()
 {
   _pos = position;
   _normal =  normal;
-  gl_Position = projMat * viewMat * vec4(position, 1.0f);
+  gl_Position = projMat * viewMat *  vec4(position, 1.0f);
 }
 `;
