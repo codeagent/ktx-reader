@@ -5,7 +5,8 @@ layout( location = 0 ) out vec4 color;
 
 in vec3 _normal;
 in vec3 _pos;
-in vec4 _tangent;
+in vec3 _tangent;
+in vec3 _bitangent;
 in vec2 _uv;
 
 uniform float exposure;
@@ -16,10 +17,28 @@ uniform float matMetallic;
 uniform float matReflectance;
 uniform float matRoughness;
 
+uniform sampler2D matAlbedoMap;
+uniform sampler2D matAoMap;
+uniform sampler2D matMetallicMap;
+uniform sampler2D matNormalMap;
+uniform sampler2D matRouhnessMap;
+
 uniform sampler2D dfgLut;
 uniform samplerCube prefilteredEnvMap;
 uniform vec3 pos;
 uniform vec3 sphericalHarmonics[9];
+
+vec3 gammaEncode(const vec3 color) {
+  return pow(color, vec3(1.0f / gamma));
+}
+
+vec3 toneMapping(const vec3 color) {
+  return vec3(1.0f) - exp(-color * exposure);
+}
+
+vec3 gammaDecode(const vec3 color) {
+  return pow(color, vec3(gamma));
+}
 
 vec3 irradianceSH(vec3 n) {
     // uniform vec3 sphericalHarmonics[9]
@@ -50,27 +69,29 @@ vec3 ibl(vec3 n, vec3 v, vec3 diffuseColor, vec3 f0, vec3 f90, float perceptualR
     return Ld + Lr;
 }
 
-vec3 gammaCorrection(const vec3 color) {
-  return pow(color, vec3(1.0f / gamma));
-}
 
-vec3 toneMapping(const vec3 color) {
-  return vec3(1.0f) - exp(-color * exposure);
-}
 
 void main()
 {
-  color = vec4(_tangent.rgb * 0.5f + 0.5f, 1.0f);
-  // color = vec4(_uv.x, _uv.y, 0.f, 1.0f);
-  return;
-  vec3 f0 = 0.16 * matReflectance * matReflectance * (1.0 - matMetallic) + matAlbedo * matMetallic;
+  mat3 tbn = mat3(_tangent, _bitangent, _normal);
+  vec3 albedo = gammaDecode(texture(matAlbedoMap, _uv).rgb);
+  float ao = gammaDecode(texture(matAlbedoMap, _uv).rgb).r;
+  float metallic = gammaDecode(texture(matMetallicMap, _uv).rgb).r;
+  float roughness = gammaDecodetexture(matRouhnessMap, _uv).r;
+  vec3 normal = texture(matNormalMap, _uv).rgb * 2.0f - 1.0f;
+
+// roughness = 1.0f;
+  normal = tbn * normal;
+  color = vec4(vec3(metallic), 1.0f);
+  // return;  
+  vec3 f0 = 0.16 * matReflectance * matReflectance * (1.0 - metallic) + albedo * metallic;
   vec3 f90 = vec3(1.0f);
 
-  vec3 n = normalize(_normal);
+  vec3 n = normalize(normal);
   vec3 v = normalize(pos - _pos);
 
-  vec3 lighting = ibl(n, v,  (1.0 - matMetallic) * matAlbedo , f0, f90, matRoughness);
-  color = vec4(gammaCorrection(toneMapping(lighting)), 1.0f);
+  vec3 lighting = ibl(n, v,  (1.0 - metallic) * albedo , f0, f90, roughness);
+  color = vec4(gammaEncode(toneMapping(lighting * ao)), 1.0f);
 }
 
 

@@ -43,6 +43,17 @@ const ENV3_IBL =
 const ENV3_SKYBOX =
   "https://cdn.jsdelivr.net/gh/codeagent/ktx-reader@master/sky/env3_skybox.ktx";
 
+const TV_ALBEDO =
+  "https://cdn.jsdelivr.net/gh/codeagent/ktx-reader@master/textures/uv_albedo-rgb.jpg";
+const TV_AO =
+  "https://cdn.jsdelivr.net/gh/codeagent/ktx-reader@master/textures/uv_AO-rgb.jpg";
+const TV_METALIC =
+  "https://cdn.jsdelivr.net/gh/codeagent/ktx-reader@master/textures/uv_metallic-rgb.jpg";
+const TV_NORMAL =
+  "https://cdn.jsdelivr.net/gh/codeagent/ktx-reader@master/textures/uv_normal-rgb.png";
+const TV_ROUGHNESS =
+  "https://cdn.jsdelivr.net/gh/codeagent/ktx-reader@master/textures/uv_roughness-rgb.jpg";
+
 const parseSH = (ktx: KtxInfo): number[] => {
   const meta = ktx.keyValueData.find(([key, value]) => /sh/.test(key));
   if (!meta) {
@@ -53,6 +64,17 @@ const parseSH = (ktx: KtxInfo): number[] => {
     .split(/[\s]+/g)
     .map(parseFloat)
     .filter(v => !isNaN(v));
+};
+
+const resolveImage = async (path: string) => {
+  return new Promise(async (r, j) => {
+    const rs = await fetch(path);
+    const blob = await rs.blob();
+    const image = new Image();
+    image.onload = () => r(image);
+    image.onerror = j;
+    image.src = URL.createObjectURL(blob);
+  });
 };
 
 // Simple sphere scene
@@ -141,13 +163,26 @@ const createBallsScene = async (renderer: Renderer): Promise<Scene> => {
 };
 
 const createTvScene = async (renderer: Renderer): Promise<Scene> => {
-  const [ibl, skybox] = await Promise.all([
-    fetch(ENV2_IBL).then(r => r.arrayBuffer()),
-    fetch(ENV2_SKYBOX).then(r => r.arrayBuffer())
+  const [
+    ibl,
+    skybox,
+    tvAlbedoImg,
+    tvAoImg,
+    tvMetalicImg,
+    tvNormalImg,
+    tvRoughnessImg
+  ] = await Promise.all([
+    fetch(ENV3_IBL).then(r => r.arrayBuffer()),
+    fetch(ENV3_SKYBOX).then(r => r.arrayBuffer()),
+    resolveImage(TV_ALBEDO),
+    resolveImage(TV_AO),
+    resolveImage(TV_METALIC),
+    resolveImage(TV_NORMAL),
+    resolveImage(TV_ROUGHNESS)
   ]);
 
-  const iblKtx = readKtx(ibl);
-  const skyboxKtx = readKtx(skybox);
+  const iblKtx = readKtx(ibl as ArrayBuffer);
+  const skyboxKtx = readKtx(skybox as ArrayBuffer);
   const iblCubemap = renderer.createCubeMap(iblKtx);
   const skyboxCubemap = renderer.createCubeMap(skyboxKtx);
 
@@ -160,12 +195,44 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
   const material = {
     shader: pbrShader,
     cubemaps: { prefilteredEnvMap: iblCubemap },
-    textures: { dfgLut },
+    textures: {
+      dfgLut,
+      matAlbedoMap: renderer.createTexture(
+        tvAlbedoImg as HTMLImageElement,
+        WebGL2RenderingContext.RGB8,
+        WebGL2RenderingContext.RGB,
+        WebGL2RenderingContext.UNSIGNED_BYTE
+      ),
+      matAoMap: renderer.createTexture(
+        tvAoImg as HTMLImageElement,
+        WebGL2RenderingContext.RGB8,
+        WebGL2RenderingContext.RGB,
+        WebGL2RenderingContext.UNSIGNED_BYTE
+      ),
+      matMetallicMap: renderer.createTexture(
+        tvMetalicImg as HTMLImageElement,
+        WebGL2RenderingContext.RGB8,
+        WebGL2RenderingContext.RGB,
+        WebGL2RenderingContext.UNSIGNED_BYTE
+      ),
+      matNormalMap: renderer.createTexture(
+        tvNormalImg as HTMLImageElement,
+        WebGL2RenderingContext.RGB8,
+        WebGL2RenderingContext.RGB,
+        WebGL2RenderingContext.UNSIGNED_BYTE
+      ),
+      matRouhnessMap: renderer.createTexture(
+        tvRoughnessImg as HTMLImageElement,
+        WebGL2RenderingContext.RGB8,
+        WebGL2RenderingContext.RGB,
+        WebGL2RenderingContext.UNSIGNED_BYTE
+      )
+    },
     uniforms: {
       sphericalHarmonics,
       matAlbedo: [1.0, 0.0, 0.0].map(v => Math.pow(v, 1.0 / 2.2)),
       matMetallic: 0.1,
-      matReflectance: 0.2,
+      matReflectance: 0.0,
       matRoughness: 0.6
     }
   };

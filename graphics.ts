@@ -60,11 +60,12 @@ export interface Drawable {
 }
 
 export class Renderer {
-  readonly context: WebGL2RenderingContext;
+  get context() {
+    return this._gl;
+  }
   private _renderSettings: RenderSettings;
 
   constructor(private _gl: WebGL2RenderingContext) {
-    this.context = _gl;
     _gl.clearColor(0.0, 0.0, 0.0, 1.0);
     _gl.clearDepth(1.0);
     _gl.enable(_gl.DEPTH_TEST);
@@ -241,6 +242,40 @@ export class Renderer {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return texture;
+  }
+
+  createTexture(
+    image: HTMLImageElement,
+    internalFormat: GLenum,
+    format: GLenum,
+    type: GLenum
+  ) {
+    const gl = this._gl;
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      internalFormat,
+      image.width,
+      image.height,
+      0,
+      format,
+      type,
+      image
+    );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(
+      gl.TEXTURE_2D,
+      gl.TEXTURE_MIN_FILTER,
+      gl.LINEAR_MIPMAP_LINEAR
+    );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    gl.generateMipmap(gl.TEXTURE_2D);
+
     return texture;
   }
 

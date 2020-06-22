@@ -10,15 +10,17 @@ uniform mat4 worldMat;
 
 out vec3 _normal;
 out vec3 _pos;
-out vec4 _tangent;
+out vec3 _tangent;
+out vec3 _bitangent;
 out vec2 _uv;
 
 void main()
 {
   _pos = position;
-  _normal =  normal;
-  _tangent = tangent;
-  _uv = uv;
+  _normal = normalize(mat3(worldMat) * normal);
+  _tangent = normalize(mat3(worldMat) * tangent.rgb);
+  _bitangent = cross(_normal, _tangent) * tangent.w;
+  _uv = vec2(uv.x, 1.0f - uv.y);
 
   gl_Position = projMat * viewMat * worldMat * vec4(position, 1.0f);
 }
