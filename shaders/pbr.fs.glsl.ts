@@ -5,6 +5,8 @@ layout( location = 0 ) out vec4 color;
 
 in vec3 _normal;
 in vec3 _pos;
+in vec4 _tangent;
+in vec2 _uv;
 
 uniform float exposure;
 uniform float gamma;
@@ -58,6 +60,9 @@ vec3 toneMapping(const vec3 color) {
 
 void main()
 {
+  color = vec4(_tangent.rgb * 0.5f + 0.5f, 1.0f);
+  // color = vec4(_uv.x, _uv.y, 0.f, 1.0f);
+  return;
   vec3 f0 = 0.16 * matReflectance * matReflectance * (1.0 - matMetallic) + matAlbedo * matMetallic;
   vec3 f90 = vec3(1.0f);
 

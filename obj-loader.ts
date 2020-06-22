@@ -74,6 +74,7 @@ export const loadObj = (content: string) => {
       if ((matches = line.match(facePositionsRegExpr))) {
         vertexFormat = [
           {
+            semantics: "position",
             size: 3,
             type: WebGL2RenderingContext.FLOAT,
             slot: 0,
@@ -97,6 +98,7 @@ export const loadObj = (content: string) => {
       else if ((matches = line.match(facePositionsNormalsRegExpr))) {
         vertexFormat = [
           {
+            semantics: "position",
             size: 3,
             type: WebGL2RenderingContext.FLOAT,
             slot: 0,
@@ -104,6 +106,7 @@ export const loadObj = (content: string) => {
             stride: 24
           },
           {
+            semantics: "normal",
             size: 3,
             type: WebGL2RenderingContext.FLOAT,
             slot: 1,
@@ -134,6 +137,7 @@ export const loadObj = (content: string) => {
       else if ((matches = line.match(faceFullRegExpr))) {
         vertexFormat = [
           {
+            semantics: "position",
             size: 3,
             type: WebGL2RenderingContext.FLOAT,
             slot: 0,
@@ -141,6 +145,7 @@ export const loadObj = (content: string) => {
             stride: 32
           },
           {
+            semantics: "normal",
             size: 3,
             type: WebGL2RenderingContext.FLOAT,
             slot: 1,
@@ -148,6 +153,7 @@ export const loadObj = (content: string) => {
             stride: 32
           },
           {
+            semantics: "uv",
             size: 2,
             type: WebGL2RenderingContext.FLOAT,
             slot: 2,

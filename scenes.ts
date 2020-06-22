@@ -20,6 +20,7 @@ import SUZANNE from "./objects/suzanne.obj";
 import ICOSPHERE from "./objects/icosphere.obj";
 import CUBE from "./objects/cube.obj";
 import TV from "./objects/tv.obj";
+import { calculateTangents } from "./utils";
 
 export interface Scene {
   name: string;
@@ -175,7 +176,7 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
     const transform = new Transform();
     transform.scale = [scale, scale, scale];
     transform.position = [0.0, -3.0, 0.0];
-    const geometry = renderer.createGeometry(tv[name]);
+    const geometry = renderer.createGeometry(calculateTangents(tv[name]));
     drawables.push({ material, transform, geometry });
   }
 

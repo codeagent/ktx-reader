@@ -29,6 +29,7 @@ export interface Material {
 }
 
 export interface VertexAttribute {
+  semantics: string;
   slot: number;
   size: number;
   type: GLenum;
