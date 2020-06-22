@@ -2,6 +2,7 @@ import "./style.css";
 import { vec3 } from "gl-matrix";
 
 import { Renderer } from "./graphics";
+import { SceneOptionsForm } from "./controls";
 
 import init from "./scenes";
 
@@ -17,6 +18,23 @@ const renderer = new Renderer(gl);
 
 init(renderer).then(scenes => {
   const scene = scenes[0];
+
+  const sceneOptionsForm = new SceneOptionsForm(
+    {
+      scene: scene.name,
+      gamma: 2.2,
+      exposure: 2.2
+    },
+    scenes.map(s => s.name),
+    document.getElementById("form")
+  );
+
+  sceneOptionsForm.change$.subscribe(options => {
+    renderer.setRenderSettings({
+      gamma: options.gamma,
+      exposure: options.exposure
+    });
+  });
 
   let t = Date.now(),
     dt = 0.0,

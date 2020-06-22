@@ -1,8 +1,49 @@
 * {
   font-family: Lato;
+  font-size: 14px;
+  color: #444;
+}
+
+.grid {
+  display: flex;
+  flex-direction: row;
+}
+
+.grid>* {
+  flex: 1;
+}
+
+label {
+  padding-right: 16px;
+  width: 60px;
+  display: inline-block;
+  line-height: 24px;
+  vertical-align: middle;
+}
+
+small {
+  display: inline-block;
+  width: 16px;
+  font-size: 10px;
 }
 
 #canvas {
-  margin: 100px auto;
+  margin: 30px auto;
   display: block;
+}
+
+#flex {
+  padding-right: 16px;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex {
+  flex: 1;
+}
+
+select {
+  margin: 2px 4px;
 }

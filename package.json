@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@types/gl-matrix": "^2.4.5",
-    "gl-matrix": "^3.3.0"
+    "gl-matrix": "^3.3.0",
+    "rxjs": "^6.5.5"
   }
 }

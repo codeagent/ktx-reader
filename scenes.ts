@@ -78,7 +78,7 @@ const createBallsScene = async (renderer: Renderer): Promise<Scene> => {
     const sphericalHarmonics = parseSH(iblKtx);
     const N = 8;
     const RANGE = 10.0;
-    const matAlbedo = [1.0, 0.0, 0.0];
+    const matAlbedo = [1.2, 0.0, 0.0];
     const matReflectance = 0.6;
     const scale = 0.6;
 
@@ -125,7 +125,7 @@ const createBallsScene = async (renderer: Renderer): Promise<Scene> => {
   camera.position = [0.0, 0.0, 5.0];
 
   return {
-    name: "Ball",
+    name: "Balls",
     camera,
     drawables: [
       ...drawables,
