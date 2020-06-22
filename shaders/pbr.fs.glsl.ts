@@ -73,17 +73,23 @@ vec3 ibl(vec3 n, vec3 v, vec3 diffuseColor, vec3 f0, vec3 f90, float perceptualR
 
 void main()
 {
-  mat3 tbn = mat3(_tangent, _bitangent, _normal);
-  vec3 albedo = gammaDecode(texture(matAlbedoMap, _uv).rgb);
-  float ao = gammaDecode(texture(matAlbedoMap, _uv).rgb).r;
-  float metallic = gammaDecode(texture(matMetallicMap, _uv).rgb).r;
-  float roughness = gammaDecodetexture(matRouhnessMap, _uv).r;
-  vec3 normal = texture(matNormalMap, _uv).rgb * 2.0f - 1.0f;
+  // vec3 albedo = matAlbedo;
+  // float ao = 1.0f;
+  // float metallic = matMetallic;
+  // float roughness = matRoughness;
+  // normal = _normal;
 
-// roughness = 1.0f;
+  mat3 tbn = mat3(_tangent, _bitangent, _normal);
+  vec3 normal = texture(matNormalMap, _uv).rgb * 2.0f - 1.0f;
+  vec3 albedo = gammaDecode(texture(matAlbedoMap, _uv).rgb) * matAlbedo;
+  float ao = texture(matAlbedoMap, _uv).r;
+  float metallic = texture(matMetallicMap, _uv).r * matMetallic;
+  float roughness = texture(matRouhnessMap, _uv).r * matRoughness;
   normal = tbn * normal;
-  color = vec4(vec3(metallic), 1.0f);
-  // return;  
+  
+
+  
+  
   vec3 f0 = 0.16 * matReflectance * matReflectance * (1.0 - metallic) + albedo * metallic;
   vec3 f90 = vec3(1.0f);
 

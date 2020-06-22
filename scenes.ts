@@ -173,7 +173,7 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
     tvRoughnessImg
   ] = await Promise.all([
     fetch(ENV3_IBL).then(r => r.arrayBuffer()),
-    fetch(ENV3_SKYBOX).then(r => r.arrayBuffer()),
+    fetch(ENV2_SKYBOX).then(r => r.arrayBuffer()),
     resolveImage(TV_ALBEDO),
     resolveImage(TV_AO),
     resolveImage(TV_METALIC),
@@ -230,10 +230,10 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
     },
     uniforms: {
       sphericalHarmonics,
-      matAlbedo: [1.0, 0.0, 0.0].map(v => Math.pow(v, 1.0 / 2.2)),
-      matMetallic: 0.1,
-      matReflectance: 0.0,
-      matRoughness: 0.6
+      matAlbedo: [1.0, 1.0, 1.0],
+      matMetallic: 1.0,
+      matReflectance: 1.2,
+      matRoughness: 2.0
     }
   };
 

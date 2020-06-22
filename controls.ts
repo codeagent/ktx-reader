@@ -34,13 +34,13 @@ export class SceneOptionsForm {
     this._exposure.value = `${value.exposure}`;
 
     for (const scene of scenes) {
-      this._scene.options.add(new Option(scene, scene));
+      this._scene.options.add(new Option(scene, scene, scene === value.scene, scene === value.scene));
     }
 
     this._change$ = new BehaviorSubject<SceneOptions>(value);
 
     merge(
-      fromEvent(this._scene, "select"),
+      fromEvent(this._scene, "input"),
       fromEvent(this._gamma, "input"),
       fromEvent(this._exposure, "input")
     )
