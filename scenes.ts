@@ -1,3 +1,5 @@
+import * as glMatrix from "gl-matrix";
+
 import {
   Camera,
   Cubemap,
@@ -199,7 +201,7 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
     tvRoughnessImg
   ] = await Promise.all([
     fetch(ENV1_IBL).then(r => r.arrayBuffer()),
-    fetch(ENV1_SKYBOX).then(r => r.arrayBuffer()),
+    fetch(ENV3_SKYBOX).then(r => r.arrayBuffer()),
     resolveImage(TV_ALBEDO),
     resolveImage(TV_AO),
     resolveImage(TV_METALIC),
@@ -258,7 +260,7 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
       sphericalHarmonics,
       matAlbedo: [1.0, 1.0, 1.0],
       matMetallic: 1.0,
-      matReflectance: 0.2,
+      matReflectance: 0.3,
       matRoughness: 1.0
     }
   };

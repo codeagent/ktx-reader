@@ -17,7 +17,7 @@ const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
 const renderer = new Renderer(gl);
 
 init(renderer).then(scenes => {
-  let scene = scenes[0];
+  let scene = scenes[1];
 
   const sceneOptionsForm = new SceneOptionsForm(
     {

@@ -75,7 +75,7 @@ void main()
   mat3 tbn = mat3(normalize(_tangent), normalize(_bitangent), normalize(_normal));
   vec3 normal = texture(matNormalMap, _uv).rgb * 2.0f - 1.0f;
   vec3 albedo = gammaDecode(texture(matAlbedoMap, _uv).rgb * matAlbedo);
-  float ao = texture(matAlbedoMap, _uv).r;
+  float ao = texture(matAoMap, _uv).r;
   float metallic = texture(matMetallicMap, _uv).r * matMetallic;
   float roughness = texture(matRouhnessMap, _uv).r * matRoughness;
   normal = tbn * normal;
