@@ -16,7 +16,7 @@ out vec2 _uv;
 
 void main()
 {
-  _pos = position;
+  _pos = vec3(worldMat * vec4(position, 1.0f));
   _normal = normalize(mat3(worldMat) * normal);
   _tangent = normalize(mat3(worldMat) * tangent.rgb);
   _bitangent = cross(_normal, _tangent) * tangent.w;

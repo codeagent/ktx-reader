@@ -17,7 +17,7 @@ const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
 const renderer = new Renderer(gl);
 
 init(renderer).then(scenes => {
-  let scene = scenes[1];
+  let scene = scenes[0];
 
   const sceneOptionsForm = new SceneOptionsForm(
     {
@@ -44,7 +44,7 @@ init(renderer).then(scenes => {
     dt = 0.0,
     angle = 0.0;
   const omega = Math.PI * 0.025,
-    radius = 10.0;
+    radius = 8.0;
 
   const draw = () => {
     angle += omega * dt;
