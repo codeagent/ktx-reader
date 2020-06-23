@@ -87,7 +87,7 @@ void main()
   vec3 v = normalize(pos - _pos);
 
   vec3 lighting = ibl(n, v,  (1.0 - metallic) * albedo , f0, f90, roughness);
-  color = vec4(gammaEncode(toneMapping(lighting * ao)), 1.0f);
+  color = vec4(gammaEncode(toneMapping(lighting)) *, 1.0f);
 }
 
 `;

@@ -5,9 +5,11 @@ import { Renderer } from "./graphics";
 import { SceneOptionsForm, RenderMode } from "./controls";
 import init from "./scenes";
 
-import VS from "./shaders/pbr.vs.glsl";
+import PBR_VS from "./shaders/pbr.vs.glsl";
 import PBR_FS from "./shaders/pbr.fs.glsl";
 import MATCAP_FS from "./shaders/matcap.fs.glsl";
+import FLAT_VS from "./shaders/flat.vs.glsl";
+import AO_FS from "./shaders/ao.fs.glsl";
 
 const PI = Math.PI;
 const sin = Math.sin;
@@ -20,12 +22,14 @@ const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
 const renderer = new Renderer(gl);
 
 init(renderer).then(scenes => {
-  const materialShader = renderer.createShader(VS, PBR_FS);
-  const matcapShader = renderer.createShader(VS, MATCAP_FS);
+  const materialShader = renderer.createShader(PBR_VS, PBR_FS);
+  const matcapShader = renderer.createShader(PBR_VS, MATCAP_FS);
+  const aoShader = renderer.createShader(FLAT_VS, AO_FS);
 
   const shaderLookup = {
     [RenderMode.Material]: materialShader,
-    [RenderMode.Matcap]: matcapShader
+    [RenderMode.Matcap]: matcapShader,
+    [RenderMode.Occlusion]: aoShader,
   };
   let scene = scenes[1];
   let shader = shaderLookup[RenderMode.Material];

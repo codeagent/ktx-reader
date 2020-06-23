@@ -3,7 +3,8 @@ import { map } from "rxjs/operators";
 
 export enum RenderMode {
   Material = "Material",
-  Matcap = "Matcap"
+  Matcap = "Matcap",
+  Occlusion = "Occlusion",
 }
 
 export interface SceneOptions {
