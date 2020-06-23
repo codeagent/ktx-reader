@@ -22,8 +22,8 @@ init(renderer).then(scenes => {
   const sceneOptionsForm = new SceneOptionsForm(
     {
       scene: scene.name,
-      gamma: 2.2,
-      exposure: 2.2
+      gamma: scene.settings.gamma,
+      exposure: scene.settings.exposure
     },
     scenes.map(s => s.name),
     document.getElementById("form")
@@ -37,20 +37,26 @@ init(renderer).then(scenes => {
 
     if (scene.name !== options.scene) {
       scene = scenes.find(scene => scene.name === options.scene);
+      renderer.setRenderSettings(scene.settings);
+      sceneOptionsForm.value = {
+        scene: scene.name,
+        exposure: scene.settings.exposure,
+        gamma: scene.settings.gamma
+      };
     }
   });
 
   let t = Date.now(),
     dt = 0.0,
     angle = 0.0;
-  const omega = Math.PI * 0.025,
+  const omega = Math.PI * 0.075,
     radius = 8.0;
 
   const draw = () => {
     angle += omega * dt;
     const pos: vec3 = [
       radius * sin(angle),
-      radius * sin(angle * 0.5) * cos(angle * 0.5),
+      radius * sin(angle * 0.25) * cos(angle * 0.25),
       radius * cos(angle)
     ];
     scene.camera.lookAt(pos, origin);

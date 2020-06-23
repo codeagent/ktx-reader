@@ -8,7 +8,8 @@ import {
   Renderer,
   Texture2d,
   Drawable,
-  Transform
+  Transform,
+  RenderSettings
 } from "./graphics";
 
 import { KtxInfo, readKtx } from "./ktx-reader";
@@ -22,12 +23,14 @@ import SUZANNE from "./objects/suzanne.obj";
 import ICOSPHERE from "./objects/icosphere.obj";
 import CUBE from "./objects/cube.obj";
 import TV from "./objects/tv.obj";
+
 import { calculateTangents } from "./utils";
 
 export interface Scene {
   name: string;
   camera: Camera;
   drawables: Drawable[];
+  settings: RenderSettings;
 }
 
 const WHITE = new Uint8Array([255, 255, 255, 255]);
@@ -82,7 +85,6 @@ const resolveImage = async (path: string) => {
   });
 };
 
-// Simple sphere scene
 const createBallsScene = async (renderer: Renderer): Promise<Scene> => {
   const [ibl, skybox] = await Promise.all([
     fetch(ENV2_IBL).then(r => r.arrayBuffer()),
@@ -179,6 +181,10 @@ const createBallsScene = async (renderer: Renderer): Promise<Scene> => {
   return {
     name: "Balls",
     camera,
+    settings: {
+      gamma: 2.2,
+      exposure: 3.0
+    },
     drawables: [
       ...drawables,
       {
@@ -201,7 +207,7 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
     tvRoughnessImg
   ] = await Promise.all([
     fetch(ENV1_IBL).then(r => r.arrayBuffer()),
-    fetch(ENV3_SKYBOX).then(r => r.arrayBuffer()),
+    fetch(ENV1_SKYBOX).then(r => r.arrayBuffer()),
     resolveImage(TV_ALBEDO),
     resolveImage(TV_AO),
     resolveImage(TV_METALIC),
@@ -260,8 +266,8 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
       sphericalHarmonics,
       matAlbedo: [1.0, 1.0, 1.0],
       matMetallic: 1.0,
-      matReflectance: 0.3,
-      matRoughness: 1.0
+      matReflectance: 0.5,
+      matRoughness: 1.5
     }
   };
 
@@ -270,7 +276,7 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
   for (const name in tv) {
     const transform = new Transform();
     transform.scale = [scale, scale, scale];
-    transform.position = [0.0, -3.0, 0.0];
+    transform.position = [0.0, -2.0, 0.0];
     const geometry = renderer.createGeometry(calculateTangents(tv[name]));
     drawables.push({ material, transform, geometry });
   }
@@ -294,6 +300,10 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
   return {
     name: "Tv",
     camera,
+    settings: {
+      gamma: 2.2,
+      exposure: 8.0
+    },
     drawables: [
       ...drawables,
       {

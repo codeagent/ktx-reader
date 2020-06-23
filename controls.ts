@@ -16,6 +16,13 @@ export class SceneOptionsForm {
     return this._change$.asObservable();
   }
 
+  set value(value: SceneOptions) {
+    this._scene.value = `${value.scene}`;
+    this._gamma.value = `${value.gamma}`;
+    this._exposure.value = `${value.exposure}`;
+    this._change$.next(value);
+  }
+
   private _change$: BehaviorSubject<SceneOptions>;
 
   constructor(
@@ -29,15 +36,15 @@ export class SceneOptionsForm {
       "#exposure"
     ) as HTMLInputElement;
 
-    this._scene.value = `${value.scene}`;
-    this._gamma.value = `${value.gamma}`;
-    this._exposure.value = `${value.exposure}`;
-
     for (const scene of scenes) {
-      this._scene.options.add(new Option(scene, scene, scene === value.scene, scene === value.scene));
+      this._scene.options.add(
+        new Option(scene, scene, scene === value.scene, scene === value.scene)
+      );
     }
 
-    this._change$ = new BehaviorSubject<SceneOptions>(value);
+    this._change$ = new BehaviorSubject<SceneOptions>(null);
+
+    this.value = value;
 
     merge(
       fromEvent(this._scene, "input"),
