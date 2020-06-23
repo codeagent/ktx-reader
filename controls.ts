@@ -1,14 +1,21 @@
 import { Observable, BehaviorSubject, fromEvent, merge } from "rxjs";
 import { map } from "rxjs/operators";
 
+export enum RenderMode {
+  Material = "Material",
+  Matcap = "Matcap"
+}
+
 export interface SceneOptions {
   gamma: number;
   exposure: number;
   scene: string;
+  renderMode: RenderMode;
 }
 
 export class SceneOptionsForm {
   private _scene: HTMLSelectElement;
+  private _renderMode: HTMLSelectElement;
   private _gamma: HTMLInputElement;
   private _exposure: HTMLInputElement;
 
@@ -20,6 +27,7 @@ export class SceneOptionsForm {
     this._scene.value = `${value.scene}`;
     this._gamma.value = `${value.gamma}`;
     this._exposure.value = `${value.exposure}`;
+    this._renderMode.value = `${value.renderMode}`;
     this._change$.next(value);
   }
 
@@ -31,6 +39,9 @@ export class SceneOptionsForm {
     protected container: HTMLElement
   ) {
     this._scene = this.container.querySelector("#scene") as HTMLSelectElement;
+    this._renderMode = this.container.querySelector(
+      "#render-mode"
+    ) as HTMLSelectElement;
     this._gamma = this.container.querySelector("#gamma") as HTMLInputElement;
     this._exposure = this.container.querySelector(
       "#exposure"
@@ -42,6 +53,12 @@ export class SceneOptionsForm {
       );
     }
 
+    for (const key of Object.keys(RenderMode)) {
+      this._renderMode.options.add(
+        new Option(key, key, key === value.renderMode, key === value.renderMode)
+      );
+    }
+
     this._change$ = new BehaviorSubject<SceneOptions>(null);
 
     this.value = value;
@@ -49,7 +66,8 @@ export class SceneOptionsForm {
     merge(
       fromEvent(this._scene, "input"),
       fromEvent(this._gamma, "input"),
-      fromEvent(this._exposure, "input")
+      fromEvent(this._exposure, "input"),
+      fromEvent(this._renderMode, "input")
     )
       .pipe(
         map(
@@ -57,7 +75,8 @@ export class SceneOptionsForm {
             ({
               exposure: parseFloat(this._exposure.value),
               gamma: parseFloat(this._gamma.value),
-              scene: `${this._scene.value}`
+              scene: `${this._scene.value}`,
+              renderMode: `${this._renderMode.value}`
             } as SceneOptions)
         )
       )

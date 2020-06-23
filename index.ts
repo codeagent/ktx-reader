@@ -2,9 +2,12 @@ import "./style.css";
 import { vec3 } from "gl-matrix";
 
 import { Renderer } from "./graphics";
-import { SceneOptionsForm } from "./controls";
-
+import { SceneOptionsForm, RenderMode } from "./controls";
 import init from "./scenes";
+
+import VS from "./shaders/pbr.vs.glsl";
+import PBR_FS from "./shaders/pbr.fs.glsl";
+import MATCAP_FS from "./shaders/matcap.fs.glsl";
 
 const PI = Math.PI;
 const sin = Math.sin;
@@ -17,13 +20,22 @@ const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
 const renderer = new Renderer(gl);
 
 init(renderer).then(scenes => {
+  const materialShader = renderer.createShader(VS, PBR_FS);
+  const matcapShader = renderer.createShader(VS, MATCAP_FS);
+
+  const shaderLookup = {
+    [RenderMode.Material]: materialShader,
+    [RenderMode.Matcap]: matcapShader
+  };
   let scene = scenes[1];
+  let shader = shaderLookup[RenderMode.Material];
 
   const sceneOptionsForm = new SceneOptionsForm(
     {
       scene: scene.name,
       gamma: scene.settings.gamma,
-      exposure: scene.settings.exposure
+      exposure: scene.settings.exposure,
+      renderMode: RenderMode.Material
     },
     scenes.map(s => s.name),
     document.getElementById("form")
@@ -35,13 +47,16 @@ init(renderer).then(scenes => {
       exposure: options.exposure
     });
 
+    shader = shaderLookup[options.renderMode];
+
     if (scene.name !== options.scene) {
       scene = scenes.find(scene => scene.name === options.scene);
       renderer.setRenderSettings(scene.settings);
       sceneOptionsForm.value = {
         scene: scene.name,
         exposure: scene.settings.exposure,
-        gamma: scene.settings.gamma
+        gamma: scene.settings.gamma,
+        renderMode: options.renderMode
       };
     }
   });
@@ -64,8 +79,11 @@ init(renderer).then(scenes => {
     renderer.clear();
 
     for (const drawable of scene.drawables) {
-      renderer.drawGeometry(scene.camera, drawable, drawable.material);
+      drawable.material.shader = shader;
+      renderer.drawGeometry(scene.camera, drawable);
     }
+
+    renderer.drawGeometry(scene.camera, scene.skybox);
 
     requestAnimationFrame(draw);
 

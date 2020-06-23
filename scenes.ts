@@ -29,6 +29,7 @@ import { calculateTangents } from "./utils";
 export interface Scene {
   name: string;
   camera: Camera;
+  skybox: Drawable;
   drawables: Drawable[];
   settings: RenderSettings;
 }
@@ -185,14 +186,12 @@ const createBallsScene = async (renderer: Renderer): Promise<Scene> => {
       gamma: 2.2,
       exposure: 3.0
     },
-    drawables: [
-      ...drawables,
-      {
-        material: skyboxMaterial,
-        geometry: cubeGeometry,
-        transform: new Transform()
-      }
-    ]
+    skybox: {
+      material: skyboxMaterial,
+      geometry: cubeGeometry,
+      transform: new Transform()
+    },
+    drawables
   };
 };
 
@@ -304,14 +303,12 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
       gamma: 2.2,
       exposure: 8.0
     },
-    drawables: [
-      ...drawables,
-      {
-        material: skyboxMaterial,
-        geometry: cubeGeometry,
-        transform: new Transform()
-      }
-    ]
+    skybox: {
+      material: skyboxMaterial,
+      geometry: cubeGeometry,
+      transform: new Transform()
+    },
+    drawables
   };
 };
 

@@ -12,7 +12,7 @@ export type VertexBuffer = WebGLBuffer;
 export type IndexBuffer = WebGLBuffer;
 
 export interface Material {
-  shader: Shader;
+  shader?: Shader;
   cubemaps?: {
     [name: string]: Cubemap;
   };
@@ -315,30 +315,30 @@ export class Renderer {
     return texture;
   }
 
-  drawGeometry(camera: Camera, drawable: Drawable, material: Material) {
-    this._gl.useProgram(material.shader);
+  drawGeometry(camera: Camera, drawable: Drawable) {
+    this._gl.useProgram(drawable.material.shader);
     let unit = 0;
     let loc;
 
     // Material textures
-    for (const name in material.textures) {
-      loc = this._gl.getUniformLocation(material.shader, name);
+    for (const name in drawable.material.textures) {
+      loc = this._gl.getUniformLocation(drawable.material.shader, name);
       if (loc) {
         this._gl.activeTexture(this._gl.TEXTURE0 + unit);
-        this._gl.bindTexture(this._gl.TEXTURE_2D, material.textures[name]);
+        this._gl.bindTexture(this._gl.TEXTURE_2D, drawable.material.textures[name]);
         this._gl.uniform1i(loc, unit);
         unit++;
       }
     }
 
     // Material cubemaps
-    for (const name in material.cubemaps) {
-      loc = this._gl.getUniformLocation(material.shader, name);
+    for (const name in drawable.material.cubemaps) {
+      loc = this._gl.getUniformLocation(drawable.material.shader, name);
       if (loc) {
         this._gl.activeTexture(this._gl.TEXTURE0 + unit);
         this._gl.bindTexture(
           this._gl.TEXTURE_CUBE_MAP,
-          material.cubemaps[name]
+          drawable.material.cubemaps[name]
         );
         this._gl.uniform1i(loc, unit);
         unit++;
@@ -346,9 +346,9 @@ export class Renderer {
     }
 
     // Material uniforms
-    const uniforms = { ...this._renderSettings, ...material.uniforms };
+    const uniforms = { ...this._renderSettings, ...drawable.material.uniforms };
     for (const name in uniforms) {
-      loc = this._gl.getUniformLocation(material.shader, name);
+      loc = this._gl.getUniformLocation(drawable.material.shader, name);
       if (typeof uniforms[name] === "number") {
         this._gl.uniform1f(loc, uniforms[name] as number);
       } else {
@@ -356,29 +356,29 @@ export class Renderer {
       }
     }
 
-    loc = this._gl.getUniformLocation(material.shader, "worldMat");
+    loc = this._gl.getUniformLocation(drawable.material.shader, "worldMat");
     if (loc) {
       this._gl.uniformMatrix4fv(loc, false, drawable.transform.transform);
     }
 
-    loc = this._gl.getUniformLocation(material.shader, "viewMat");
+    loc = this._gl.getUniformLocation(drawable.material.shader, "viewMat");
     if (loc) {
       this._gl.uniformMatrix4fv(loc, false, camera.view);
     }
 
-    loc = this._gl.getUniformLocation(material.shader, "projMat");
+    loc = this._gl.getUniformLocation(drawable.material.shader, "projMat");
     if (loc) {
       this._gl.uniformMatrix4fv(loc, false, camera.projection);
     }
 
-    loc = this._gl.getUniformLocation(material.shader, "pos");
+    loc = this._gl.getUniformLocation(drawable.material.shader, "pos");
     if (loc) {
       this._gl.uniform3fv(loc, camera.position);
     }
 
-    if (material.state) {
-      this._gl.cullFace(material.state.cullFace || WebGL2RenderingContext.BACK);
-      this._gl.depthMask(material.state.zWrite || true);
+    if (drawable.material.state) {
+      this._gl.cullFace(drawable.material.state.cullFace || WebGL2RenderingContext.BACK);
+      this._gl.depthMask(drawable.material.state.zWrite || true);
     } else {
       this._gl.cullFace(WebGL2RenderingContext.BACK);
       this._gl.depthMask(true);
