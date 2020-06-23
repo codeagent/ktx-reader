@@ -10,6 +10,10 @@ import PBR_FS from "./shaders/pbr.fs.glsl";
 import MATCAP_FS from "./shaders/matcap.fs.glsl";
 import FLAT_VS from "./shaders/flat.vs.glsl";
 import AO_FS from "./shaders/ao.fs.glsl";
+import METALLIC_FS from "./shaders/metallic.fs.glsl";
+import ROUGHNESS_FS from "./shaders/roughness.fs.glsl";
+import ALBEDO_FS from "./shaders/albedo.fs.glsl";
+import NORMALS_FS from "./shaders/normals.fs.glsl";
 
 const PI = Math.PI;
 const sin = Math.sin;
@@ -25,11 +29,19 @@ init(renderer).then(scenes => {
   const materialShader = renderer.createShader(PBR_VS, PBR_FS);
   const matcapShader = renderer.createShader(PBR_VS, MATCAP_FS);
   const aoShader = renderer.createShader(FLAT_VS, AO_FS);
+  const metallicShader = renderer.createShader(FLAT_VS, METALLIC_FS);
+  const roughnessShader = renderer.createShader(FLAT_VS, ROUGHNESS_FS);
+  const albedoShader = renderer.createShader(FLAT_VS, ALBEDO_FS);
+  const normalsShader = renderer.createShader(FLAT_VS, NORMALS_FS);
 
   const shaderLookup = {
     [RenderMode.Material]: materialShader,
     [RenderMode.Matcap]: matcapShader,
     [RenderMode.Occlusion]: aoShader,
+    [RenderMode.Metallic]: metallicShader,
+    [RenderMode.Roughness]: roughnessShader,
+    [RenderMode.Albedo]: albedoShader,
+    [RenderMode.Normals]: normalsShader,
   };
   let scene = scenes[1];
   let shader = shaderLookup[RenderMode.Material];

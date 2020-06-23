@@ -69,7 +69,6 @@ vec3 ibl(vec3 n, vec3 v, vec3 diffuseColor, vec3 f0, vec3 f90, float perceptualR
     return Ld + Lr;
 }
 
-
 void main()
 {
   mat3 tbn = mat3(normalize(_tangent), normalize(_bitangent), normalize(_normal));
@@ -87,7 +86,7 @@ void main()
   vec3 v = normalize(pos - _pos);
 
   vec3 lighting = ibl(n, v,  (1.0 - metallic) * albedo , f0, f90, roughness);
-  color = vec4(gammaEncode(toneMapping(lighting)) *, 1.0f);
+  color = vec4(gammaEncode(toneMapping(lighting * ao)), 1.0f);
 }
 
 `;

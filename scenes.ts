@@ -15,8 +15,6 @@ import {
 import { KtxInfo, readKtx } from "./ktx-reader";
 import { loadObj } from "./obj-loader";
 
-import PBR_VS from "./shaders/pbr.vs.glsl";
-import PBR_FS from "./shaders/pbr.fs.glsl";
 import SKYBOX_VS from "./shaders/skybox.vs.glsl";
 import SKYBOX_FS from "./shaders/skybox.fs.glsl";
 import SUZANNE from "./objects/suzanne.obj";
@@ -105,7 +103,6 @@ const createBallsScene = async (renderer: Renderer): Promise<Scene> => {
 
   const drawables: Drawable[] = [];
   {
-    const pbrShader = renderer.createShader(PBR_VS, PBR_FS);
     const dfgLut = renderer.createDfgTexture();
     const sphericalHarmonics = parseSH(iblKtx);
     const N = 8;
@@ -141,7 +138,6 @@ const createBallsScene = async (renderer: Renderer): Promise<Scene> => {
 
         transform.scale = [scale, scale, scale];
         const material = {
-          shader: pbrShader,
           cubemaps: { prefilteredEnvMap: iblCubemap },
           textures: {
             dfgLut,
@@ -219,14 +215,12 @@ const createTvScene = async (renderer: Renderer): Promise<Scene> => {
   const iblCubemap = renderer.createCubeMap(iblKtx);
   const skyboxCubemap = renderer.createCubeMap(skyboxKtx);
 
-  const pbrShader = renderer.createShader(PBR_VS, PBR_FS);
   const dfgLut = renderer.createDfgTexture();
   const sphericalHarmonics = parseSH(iblKtx);
 
   const scale = 0.075;
 
   const material = {
-    shader: pbrShader,
     cubemaps: { prefilteredEnvMap: iblCubemap },
     textures: {
       dfgLut,
