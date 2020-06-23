@@ -22,7 +22,8 @@ import ICOSPHERE from "./objects/icosphere.obj";
 import CUBE from "./objects/cube.obj";
 import TV from "./objects/tv.obj";
 
-import { calculateTangents } from "./utils";
+import { calculateTangents } from "./mesh-utils";
+import { resolveImage } from "./resolve-image";
 
 export interface Scene {
   name: string;
@@ -73,16 +74,7 @@ const parseSH = (ktx: KtxInfo): number[] => {
     .filter(v => !isNaN(v));
 };
 
-const resolveImage = async (path: string) => {
-  return new Promise(async (r, j) => {
-    const rs = await fetch(path);
-    const blob = await rs.blob();
-    const image = new Image();
-    image.onload = () => r(image);
-    image.onerror = j;
-    image.src = URL.createObjectURL(blob);
-  });
-};
+
 
 const createBallsScene = async (renderer: Renderer): Promise<Scene> => {
   const [ibl, skybox] = await Promise.all([

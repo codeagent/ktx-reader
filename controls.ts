@@ -9,6 +9,7 @@ export enum RenderMode {
   Metallic = "Metallic",
   Roughness = "Roughness",
   Matcap = "Matcap",
+  UvChecker = "UvChecker",
 }
 
 export interface SceneOptions {
