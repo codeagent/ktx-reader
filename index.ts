@@ -17,7 +17,6 @@ import ALBEDO_FS from "./shaders/albedo.fs.glsl";
 import NORMALS_FS from "./shaders/normals.fs.glsl";
 import UV_CHECKER_FS from "./shaders/uv-checker.fs.glsl";
 
-
 const UV_CHECKER =
   "https://cdn.jsdelivr.net/gh/codeagent/ktx-reader@master/textures/uv-checker.png";
 
@@ -28,6 +27,9 @@ const floor = Math.floor;
 const origin: vec3 = [0.0, 0.0, 0.0];
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+canvas.width = self.screen.width;
+canvas.height = self.screen.height;
+
 const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
 const renderer = new Renderer(gl);
 

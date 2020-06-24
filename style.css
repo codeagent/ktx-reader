@@ -1,7 +1,11 @@
 * {
   font-family: Lato;
   font-size: 14px;
-  color: #444;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
 }
 
 .grid {
@@ -28,9 +32,13 @@ small {
 }
 
 #canvas {
-  margin: 30px auto;
+  margin: 0;
+  padding: 0;
   display: block;
+  width: 100%;
+  height: 100%;
 }
+
 
 #flex {
   padding-right: 16px;
@@ -46,4 +54,19 @@ small {
 
 select {
   margin: 2px 4px;
+}
+
+#container {
+  position: relative;
+}
+
+#form {
+  position: absolute;
+  color: white;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 270px;
+  padding: 8px 4
+  background: rgba(0, 0, 0, 0.5);
 }

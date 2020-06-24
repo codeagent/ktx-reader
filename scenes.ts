@@ -74,8 +74,6 @@ const parseSH = (ktx: KtxInfo): number[] => {
     .filter(v => !isNaN(v));
 };
 
-
-
 const createBallsScene = async (renderer: Renderer): Promise<Scene> => {
   const [ibl, skybox] = await Promise.all([
     fetch(ENV2_IBL).then(r => r.arrayBuffer()),
